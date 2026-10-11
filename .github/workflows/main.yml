@@ -1,0 +1,48 @@
+name: Build AI Super App APK
+
+on:
+workflow_dispatch:
+
+jobs:
+build:
+runs-on: ubuntu-latest
+
+steps:
+  - name: Get source code
+    uses: actions/checkout@v4
+
+  - name: Set up Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: 22
+      cache: npm
+
+  - name: Install dependencies
+    run: npm install
+
+  - name: Build Next.js app
+    run: npm run build
+
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: 21
+
+  - name: Set up Android SDK
+    uses: android-actions/setup-android@v3
+
+  - name: Sync Capacitor
+    run: npx cap sync android
+
+  - name: Build APK
+    run: |
+      cd android
+      chmod +x gradlew
+      ./gradlew assembleDebug
+
+  - name: Upload APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: AI-Super-App-APK
+      path: android/app/build/outputs/apk/debug/app-debug.apk
